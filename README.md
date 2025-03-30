@@ -79,7 +79,7 @@ The system includes four predefined roles:
 
 ## Test Users
 
-The seed script creates the following test users (all with password: `secret42`):
+The seed script creates the following test users (password includes on the seeder):
 
 - Admin: `admin@example.com`
 - Doctor: `doctor@example.com`
