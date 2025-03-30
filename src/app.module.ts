@@ -4,8 +4,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
-import { PatientsModule } from './patients/patients.module';
 import { TreatmentsModule } from './treatments/treatments.module';
+import { MedicationsModule } from './medications/medications.module';
+import { PatientsModule } from './patients/patients.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -14,8 +16,10 @@ import { TreatmentsModule } from './treatments/treatments.module';
     }),
     PrismaModule,
     AuthModule,
-    PatientsModule,
     TreatmentsModule,
+    MedicationsModule,
+    PatientsModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

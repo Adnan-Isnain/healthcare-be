@@ -18,13 +18,6 @@ export class PatientsService {
       where: {
         deletedAt: null,
       },
-      include: {
-        treatments: {
-          where: {
-            deletedAt: null,
-          },
-        },
-      },
     });
   }
 
@@ -33,13 +26,6 @@ export class PatientsService {
       where: {
         id,
         deletedAt: null,
-      },
-      include: {
-        treatments: {
-          where: {
-            deletedAt: null,
-          },
-        },
       },
     });
 
@@ -78,5 +64,20 @@ export class PatientsService {
     } catch (error) {
       throw new NotFoundException(`Patient with ID ${id} not found`);
     }
+  }
+
+  async findByPatientId(patientId: string) {
+    const patient = await this.prisma.patient.findFirst({
+      where: {
+        patientId,
+        deletedAt: null,
+      },
+    });
+
+    if (!patient) {
+      throw new NotFoundException(`Patient with ID ${patientId} not found`);
+    }
+
+    return patient;
   }
 } 

@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty } from 'class-validator';
 
-export class CreatePatientDto {
-  @ApiProperty({ example: 'John Doe' })
+export class CreateMedicationDto {
+  @ApiProperty({ example: 'Paracetamol' })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ example: 'P123456' })
+  @ApiProperty({ example: 'paracetamol' })
   @IsString()
   @IsNotEmpty()
-  patientId: string;
+  slug: string;
 } 

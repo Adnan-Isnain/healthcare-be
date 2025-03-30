@@ -5,6 +5,15 @@ import { UpdateTreatmentDto } from './dto/update-treatment.dto';
 import { CreateTreatmentOptionDto } from './dto/create-treatment-option.dto';
 import { CreateMedicationDto } from './dto/create-medication.dto';
 
+interface TreatmentSearchParams {
+  patientId?: string;
+  doctorId?: string;
+  startDate?: Date;
+  endDate?: Date;
+  treatmentOption?: string;
+  medication?: string;
+}
+
 @Injectable()
 export class TreatmentsService {
   constructor(private prisma: PrismaService) {}
@@ -207,5 +216,145 @@ export class TreatmentsService {
         deletedAt: new Date(),
       },
     });
+  }
+
+  async searchMedications(query?: string) {
+    return this.prisma.medication.findMany({
+      where: {
+        deletedAt: null,
+        ...(query
+          ? {
+              name: {
+                contains: query,
+                mode: 'insensitive',
+              },
+            }
+          : {}),
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+  }
+
+  async getActiveMedications() {
+    return this.prisma.medication.findMany({
+      where: {
+        deletedAt: null,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+  }
+
+  async searchTreatments(params: TreatmentSearchParams) {
+    const {
+      patientId,
+      doctorId,
+      startDate,
+      endDate,
+      treatmentOption,
+      medication,
+    } = params;
+
+    return this.prisma.treatment.findMany({
+      where: {
+        deletedAt: null,
+        ...(patientId && { patientId }),
+        ...(doctorId && { userId: doctorId }),
+        ...(startDate && { date: { gte: startDate } }),
+        ...(endDate && { date: { lte: endDate } }),
+        ...(treatmentOption && {
+          treatmentOptions: {
+            has: treatmentOption,
+          },
+        }),
+        ...(medication && {
+          medications: {
+            has: medication,
+          },
+        }),
+      },
+      include: {
+        patient: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            role: true,
+          },
+        },
+      },
+      orderBy: {
+        date: 'desc',
+      },
+    });
+  }
+
+  async getTreatmentStatistics(startDate?: Date, endDate?: Date) {
+    const where = {
+      deletedAt: null,
+      ...(startDate && { date: { gte: startDate } }),
+      ...(endDate && { date: { lte: endDate } }),
+    };
+
+    const [totalTreatments, totalCost, treatmentsByMonth] = await Promise.all([
+      this.prisma.treatment.count({ where }),
+      this.prisma.treatment.aggregate({
+        where,
+        _sum: {
+          costOfTreatment: true,
+        },
+      }),
+      this.prisma.treatment.groupBy({
+        by: ['date'],
+        where,
+        _count: true,
+        _sum: {
+          costOfTreatment: true,
+        },
+        orderBy: {
+          date: 'asc',
+        },
+      }),
+    ]);
+
+    return {
+      totalTreatments,
+      totalCost: totalCost._sum.costOfTreatment || 0,
+      treatmentsByMonth,
+    };
+  }
+
+  async getAllMedications(includeDeleted: boolean = false) {
+    const medications = await this.prisma.medication.findMany({
+      where: includeDeleted ? {} : { deletedAt: null },
+      orderBy: [
+        { deletedAt: 'asc' },
+        { name: 'asc' },
+      ],
+    });
+
+    // Get treatment counts separately
+    const medicationsWithCounts = await Promise.all(
+      medications.map(async (medication) => {
+        const treatmentCount = await this.prisma.treatment.count({
+          where: {
+            medications: {
+              has: medication.slug
+            },
+            deletedAt: null
+          }
+        });
+        
+        return {
+          ...medication,
+          treatmentCount
+        };
+      })
+    );
+
+    return medicationsWithCounts;
   }
 }

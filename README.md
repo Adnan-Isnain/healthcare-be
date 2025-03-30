@@ -1,140 +1,152 @@
 # Healthcare Backend API
 
-A complete healthcare treatment record system with role-based access control (RBAC), built with NestJS, Prisma, and PostgreSQL.
+A comprehensive healthcare backend API built with NestJS, featuring role-based access control and treatment management.
 
 ## Features
 
-- 🔐 Role-based Access Control (RBAC)
-- 👩‍⚕️ Treatment management
-- 💊 Medication tracking
-- 👨‍⚕️ User management with different roles
-- 📊 Patient records management
-- 🔒 JWT authentication
-- 🗃️ PostgreSQL database with Prisma ORM
+- User authentication with JWT
+- Role-based access control (Admin, Doctor, Nurse)
+- Patient management
+- Treatment management
+- Medication management
+- User management
+- Advanced search and filtering capabilities
 
 ## Prerequisites
 
-- Node.js (v18+)
+- Node.js (v16 or later)
+- PostgreSQL
 - npm or yarn
-- PostgreSQL database
 
-## Getting Started
+## Installation
 
-### Clone the Repository
-
+1. Clone the repository:
 ```bash
-git clone https://github.com/Adnan-Isnain/healthcare-be.git
-cd healthcare-be
+git clone <repository-url>
+cd healthcare-backend
 ```
 
-### Install Dependencies
-
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-### Environment Setup
-
-Create a `.env` file in the root directory:
-
+3. Create a `.env` file in the root directory with the following variables:
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/healthcare?schema=public"
+DATABASE_URL="postgresql://user:password@localhost:5432/healthcare?schema=public"
 JWT_SECRET="your-secret-key"
 ```
 
-Adjust the `DATABASE_URL` according to your PostgreSQL configuration.
-
-### Database Setup
-
-Create a PostgreSQL database named `healthcare` (or whatever you defined in your `.env` file).
-
-Run migrations to set up the database schema:
-
+4. Run database migrations:
 ```bash
 npx prisma migrate dev
 ```
 
-Seed the database with initial data:
-
+5. Seed the database:
 ```bash
 npx prisma db seed
 ```
 
-### Run the Application
+## Running the Application
 
+Development mode:
 ```bash
 npm run start:dev
 ```
 
-The API will be available at http://localhost:3000
-
-## User Roles and Permissions
-
-The system includes four predefined roles:
-
-- **ADMIN**: Full access to all features
-- **DOCTOR**: Can create, read, and update treatments
-- **NURSE**: Can read treatments and patient information
-- **STAFF**: Basic access
-
-## Test Users
-
-The seed script creates the following test users (password includes on the seeder):
-
-- Admin: `admin@example.com`
-- Doctor: `doctor@example.com`
-- Nurse: `nurse@example.com`
-- Staff: `staff@example.com`
+Production mode:
+```bash
+npm run build
+npm run start:prod
+```
 
 ## API Endpoints
 
 ### Authentication
+- **POST /auth/login** - Login with email and password
+- **POST /auth/register** - Register a new user (Admin only)
 
-- **POST /auth/register** - Register a new user
-- **POST /auth/login** - Login and get JWT token
-
-### Treatments
-
-- **POST /treatments** - Create a new treatment (DOCTOR, ADMIN)
-- **GET /treatments** - Get all treatments (DOCTOR, NURSE, ADMIN)
-- **GET /treatments/:id** - Get treatment by ID (DOCTOR, NURSE, ADMIN)
-- **PATCH /treatments/:id** - Update a treatment (DOCTOR, ADMIN)
-- **DELETE /treatments/:id** - Delete a treatment (ADMIN only)
-
-### Treatment Options
-
-- **POST /treatments/options** - Create treatment option (ADMIN only)
-- **GET /treatments/options** - Get all treatment options (DOCTOR, NURSE, ADMIN)
-- **PATCH /treatments/options/:id** - Update treatment option (ADMIN only)
-- **DELETE /treatments/options/:id** - Delete treatment option (ADMIN only)
-
-### Medications
-
-- **POST /treatments/medications** - Create medication (ADMIN only)
-- **GET /treatments/medications** - Get all medications (DOCTOR, NURSE, ADMIN)
-- **PATCH /treatments/medications/:id** - Update medication (ADMIN only)
-- **DELETE /treatments/medications/:id** - Delete medication (ADMIN only)
+### Users
+- **POST /users** - Create a new user (Admin only)
+- **GET /users** - Get all users (Admin only)
+- **GET /users/:id** - Get user by ID (Admin only)
+- **PATCH /users/:id** - Update user (Admin only)
+- **DELETE /users/:id** - Delete user (Admin only)
 
 ### Patients
+- **POST /patients** - Create a new patient (Admin, Doctor only)
+- **GET /patients** - Get all patients (Admin, Doctor, Nurse only)
+- **GET /patients/:id** - Get patient by ID (Admin, Doctor, Nurse only)
+- **GET /patients/patientId/:patientId** - Get patient by patient ID (Admin, Doctor, Nurse only)
+- **PATCH /patients/:id** - Update patient (Admin, Doctor only)
+- **DELETE /patients/:id** - Delete patient (Admin only)
 
-- **POST /patients** - Create a new patient (DOCTOR, ADMIN)
-- **GET /patients** - Get all patients (DOCTOR, NURSE, ADMIN)
-- **GET /patients/:id** - Get patient by ID (DOCTOR, NURSE, ADMIN)
-- **PATCH /patients/:id** - Update a patient (DOCTOR, ADMIN)
-- **DELETE /patients/:id** - Delete a patient (ADMIN only)
+### Treatments
+- **POST /treatments** - Create a new treatment
+- **GET /treatments** - Get all treatments
+- **GET /treatments/:id** - Get treatment by ID
+- **PATCH /treatments/:id** - Update treatment
+- **DELETE /treatments/:id** - Delete treatment
+- **GET /treatments/search** - Search treatments with filters
+- **GET /treatments/statistics** - Get treatment statistics
 
-## Testing
+### Medications
+- **POST /medications** - Create a new medication (Admin only)
+- **GET /medications** - Get all medications
+- **GET /medications/search** - Search medications by name
+- **GET /medications/active** - Get all active medications
+- **GET /medications/all** - Get all medications including deleted ones (Admin only)
+- **PATCH /medications/:id** - Update medication (Admin only)
+- **DELETE /medications/:id** - Delete medication (Admin only)
 
-Run tests with:
+## Test Users
 
-```bash
-npm test
-```
+The following test users are available after seeding the database:
 
-## Technical Details
+1. Admin User:
+   - Email: admin@example.com
+   - Password: admin123
 
-- **Framework**: NestJS
-- **ORM**: Prisma
-- **Database**: PostgreSQL
-- **Authentication**: JWT
-- **API Documentation**: Swagger
+2. Doctor User:
+   - Email: doctor@example.com
+   - Password: doctor123
+
+3. Nurse User:
+   - Email: nurse@example.com
+   - Password: nurse12
+
+4. Staff User:
+   - Email: staff@example.com
+   - Password: staff123
+
+## API Documentation
+
+The API documentation is available at `/api/docs` when running the application in development mode.
+
+## Security
+
+- All endpoints except login and register require JWT authentication
+- Role-based access control is implemented using guards and decorators
+- Passwords are hashed using bcrypt
+- JWT tokens are used for session management
+
+## Error Handling
+
+The API returns appropriate HTTP status codes and error messages:
+- 400: Bad Request
+- 401: Unauthorized
+- 403: Forbidden
+- 404: Not Found
+- 500: Internal Server Error
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a new Pull Request
+
+## License
+
+This project is licensed under the MIT License.

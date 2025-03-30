@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query } from '@nestjs/common';
 import { TreatmentsService } from './treatments.service';
 import { CreateTreatmentDto } from './dto/create-treatment.dto';
 import { UpdateTreatmentDto } from './dto/update-treatment.dto';
@@ -7,7 +7,7 @@ import { CreateMedicationDto } from './dto/create-medication.dto';
 import { JwtAuthGuard } from '../auth/auth.guard';
 import { RBACGuard } from '../auth/guards/rbac.guard';
 import { RequirePermissions } from '../auth/decorators/permissions.decorator';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { Request } from 'express';
 import { Permission } from '../auth/rbac/permissions';
 
@@ -135,5 +135,75 @@ export class TreatmentsController {
   @ApiResponse({ status: 200, description: 'Medication deleted successfully' })
   removeMedication(@Param('id') id: string) {
     return this.treatmentsService.removeMedication(id);
+  }
+
+  @Get('medications/search')
+  @RequirePermissions(Permission.READ_MEDICATION)
+  @ApiOperation({ summary: 'Search medications by name' })
+  @ApiResponse({ status: 200, description: 'Return matching medications' })
+  @ApiQuery({ name: 'query', required: false, description: 'Search query for medication name' })
+  searchMedications(@Query('query') query?: string) {
+    return this.treatmentsService.searchMedications(query);
+  }
+
+  @Get('medications/active')
+  @RequirePermissions(Permission.READ_MEDICATION)
+  @ApiOperation({ summary: 'Get all active medications' })
+  @ApiResponse({ status: 200, description: 'Return all active medications' })
+  getActiveMedications() {
+    return this.treatmentsService.getActiveMedications();
+  }
+
+  @Get('search')
+  @RequirePermissions(Permission.READ_TREATMENT)
+  @ApiOperation({ summary: 'Search treatments with filters' })
+  @ApiResponse({ status: 200, description: 'Return matching treatments' })
+  @ApiQuery({ name: 'patientId', required: false, description: 'Filter by patient ID' })
+  @ApiQuery({ name: 'doctorId', required: false, description: 'Filter by doctor ID' })
+  @ApiQuery({ name: 'startDate', required: false, description: 'Filter by start date (ISO string)' })
+  @ApiQuery({ name: 'endDate', required: false, description: 'Filter by end date (ISO string)' })
+  @ApiQuery({ name: 'treatmentOption', required: false, description: 'Filter by treatment option slug' })
+  @ApiQuery({ name: 'medication', required: false, description: 'Filter by medication slug' })
+  searchTreatments(
+    @Query('patientId') patientId?: string,
+    @Query('doctorId') doctorId?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('treatmentOption') treatmentOption?: string,
+    @Query('medication') medication?: string,
+  ) {
+    return this.treatmentsService.searchTreatments({
+      patientId,
+      doctorId,
+      startDate: startDate ? new Date(startDate) : undefined,
+      endDate: endDate ? new Date(endDate) : undefined,
+      treatmentOption,
+      medication,
+    });
+  }
+
+  @Get('statistics')
+  @RequirePermissions(Permission.READ_TREATMENT)
+  @ApiOperation({ summary: 'Get treatment statistics' })
+  @ApiResponse({ status: 200, description: 'Return treatment statistics' })
+  @ApiQuery({ name: 'startDate', required: false, description: 'Start date for statistics (ISO string)' })
+  @ApiQuery({ name: 'endDate', required: false, description: 'End date for statistics (ISO string)' })
+  getTreatmentStatistics(
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.treatmentsService.getTreatmentStatistics(
+      startDate ? new Date(startDate) : undefined,
+      endDate ? new Date(endDate) : undefined,
+    );
+  }
+
+  @Get('medications/all')
+  @RequirePermissions(Permission.READ_ALL_MEDICATIONS)
+  @ApiOperation({ summary: 'Get all medications including deleted ones (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Return all medications including deleted ones' })
+  @ApiQuery({ name: 'includeDeleted', required: false, description: 'Include deleted medications' })
+  getAllMedications(@Query('includeDeleted') includeDeleted: boolean = false) {
+    return this.treatmentsService.getAllMedications(includeDeleted);
   }
 }

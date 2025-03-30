@@ -19,11 +19,20 @@ export enum Permission {
   UPDATE_MEDICATION = 'update:medication',
   DELETE_MEDICATION = 'delete:medication',
 
+  // Patient permissions
+  CREATE_PATIENT = 'create:patient',
+  READ_PATIENT = 'read:patient',
+  UPDATE_PATIENT = 'update:patient',
+  DELETE_PATIENT = 'delete:patient',
+
   // User management permissions
   CREATE_USER = 'create:user',
   READ_USER = 'read:user',
   UPDATE_USER = 'update:user',
   DELETE_USER = 'delete:user',
+
+  // Admin-only permissions
+  READ_ALL_MEDICATIONS = 'read:all_medications',
 }
 
 export const RolePermissions: Record<Role, Permission[]> = {
@@ -34,15 +43,20 @@ export const RolePermissions: Record<Role, Permission[]> = {
     Permission.UPDATE_TREATMENT,
     Permission.READ_TREATMENT_OPTION,
     Permission.READ_MEDICATION,
+    Permission.CREATE_PATIENT,
+    Permission.READ_PATIENT,
+    Permission.UPDATE_PATIENT,
   ],
   [Role.NURSE]: [
     Permission.READ_TREATMENT,
     Permission.READ_TREATMENT_OPTION,
     Permission.READ_MEDICATION,
+    Permission.READ_PATIENT,
   ],
   [Role.STAFF]: [
     Permission.READ_TREATMENT,
     Permission.READ_TREATMENT_OPTION,
     Permission.READ_MEDICATION,
+    Permission.READ_PATIENT,
   ],
 }; 
